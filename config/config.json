@@ -1,0 +1,54 @@
+{
+    "DEFAULT": {
+        "DATA_DIR": "data",
+        "MIN_FILE_DATE": "11/9/20",
+        "FTP_SITE": "ftp://sdrftp03.dor.state.fl.us/Tax%20Roll%20Data%20Files/2020%20Final%20NAL%20-%20SDF%20Files",
+        "DATA_DOWNLOAD_DIR": "downloads",
+        "DOR_CODE_FILE": "config/dor_use_codes.json",
+        "CSV_FIELDS": [
+            "CO_NO",
+        	"PARCEL_ID",
+            "DOR_UC",
+            "JV",
+            "ACT_YR_BLT",
+            "TOT_LVG_AREA",
+            "SALE_PRC1",
+            "SALE_YR1",
+            "SALE_MO1",
+            "OWN_NAME",
+            "CENSUS_BK",
+            "PHY_ADDR1",
+            "PHY_ADDR2",
+            "PHY_CITY",
+            "PHY_ZIPCD"
+        ],
+        "LOG_FILE": "fl_tax_pipeline.log",
+        "LOG_LEVEL": "INFO"
+    },
+    "DEBUG": {
+        "DATA_DIR": "data",
+        "MIN_FILE_DATE": "11/9/20",
+        "FTP_SITE": "ftp://sdrftp03.dor.state.fl.us/Tax%20Roll%20Data%20Files/2020%20Final%20NAL%20-%20SDF%20Files",
+        "DATA_DOWNLOAD_DIR": "downloads",
+        "DOR_CODE_FILE": "config/dor_use_codes.json",
+        "CSV_FIELDS": [
+            "CO_NO",
+        	"PARCEL_ID",
+            "DOR_UC",
+            "JV",
+            "ACT_YR_BLT",
+            "TOT_LVG_AREA",
+            "SALE_PRC1",
+            "SALE_YR1",
+            "SALE_MO1",
+            "OWN_NAME",
+            "CENSUS_BK",
+            "PHY_ADDR1",
+            "PHY_ADDR2",
+            "PHY_CITY",
+            "PHY_ZIPCD"
+        ],
+        "LOG_FILE": "fl_tax_pipeline.log",
+        "LOG_LEVEL": "DEBUG"
+    }
+}
