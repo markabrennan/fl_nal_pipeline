@@ -196,14 +196,18 @@ if __name__ == "__main__":
     print(filenames)
 
     print([filenames[0]])
-    download_files(cfg, [filenames[0]])
+    download_files(cfg, filenames)
 
     download_dir = cfg.get('DATA_DOWNLOAD_DIR')
     zip_files = [name for name in os.listdir(download_dir) if name.endswith('.zip')]
-    zip_files_test = [zip_files[0]]
 
-    for filename in zip_files_test:
+  #  zip_files_test = [zip_files[0]]
+
+    for filename in zip_files:
+        print(f'processing: {filename}')
         records_list = extract_and_process(cfg, filename)
         csv_file = store_file_recs_csv(cfg, filename, records_list)
         write_to_db(cfg, csv_file)
+        print(f'wrote {csv_file} to DB')
     
+   
