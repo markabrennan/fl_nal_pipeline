@@ -39,7 +39,6 @@ def get_remote_filenames(cfg):
     # we only want file names later than Nov 9, 2020.
     min_dt = datetime.datetime.strptime(cfg.get('MIN_FILE_DATE'), '%m/%d/%y')
     logging.info(f'get_remote_filenames: minimum date:  {min_dt}')
-    print(min_dt)
 
     # open the remote FTP site and grab relevant file names
     logging.info(f'get_remote_filenames: going to hit remote site: {ftp_site}')
@@ -84,11 +83,8 @@ def download_files(cfg, filenames):
             # open remote file
             new_filename = filename.replace(' ', '_')
             full_file_path = download_dir + '/' + new_filename
-
             urlretrieve(full_download, full_file_path)
         except Exception as e:
-            #localfile.close()
-            print(f'download failed for {full_download}: {e}')
             logging.critical(f'download failed for {full_download} : {e}')
             continue
         else:
@@ -136,17 +132,24 @@ def extract_and_process(cfg, filename):
             for row in reader:
                 cur_record = {}
                 for field in fields:
+                    field_str = clean_fields(row[field])
                     if field == 'CO_NO':
                         cur_record['COUNTY'] = county
-                        cur_record[field] = row[field]
-                    if field == 'DOR_UC':
-                        cur_record[field] = row[field]
-                        cur_record['DOR_UC_DESC'] = code_dict[row[field]]
-                    cur_record[field] = row[field]
+                        cur_record[field] = field_str
+                    elif field == 'DOR_UC':
+                        cur_record[field] = field_str
+                        cur_record['DOR_UC_DESC'] = code_dict[field_str]
+                    else:
+                        cur_record[field] = field_str
                 records_list.append(cur_record)
 
     return records_list
 
+def clean_fields(field_str):
+    s = field_str.strip()
+    s = s.replace('\\', '')
+    return s
+   
 
 def store_file_recs_json(cfg, filename, file_records):
     download_dir = cfg.get('DATA_DOWNLOAD_DIR')
@@ -193,9 +196,6 @@ if __name__ == "__main__":
 
     filenames = get_remote_filenames(cfg)
 
-    print(filenames)
-
-    print([filenames[0]])
     download_files(cfg, filenames)
 
     download_dir = cfg.get('DATA_DOWNLOAD_DIR')
@@ -204,10 +204,8 @@ if __name__ == "__main__":
   #  zip_files_test = [zip_files[0]]
 
     for filename in zip_files:
-        print(f'processing: {filename}')
         records_list = extract_and_process(cfg, filename)
         csv_file = store_file_recs_csv(cfg, filename, records_list)
         write_to_db(cfg, csv_file)
-        print(f'wrote {csv_file} to DB')
     
    

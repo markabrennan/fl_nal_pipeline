@@ -13,23 +13,36 @@ Main driver code for running, processing, and testing.
 """
 
 import sys
+import os
 import logging
 from config_mgr import ConfigMgr
+from pipeline_tools import get_remote_filenames, download_files 
+from pipeline_tools import extract_and_process, store_file_recs_csv
+from pipeline_tools import write_to_db
 
 
-def main(file1, file2, config_src=None):
+
+def main(config_src=None):
     """ Main routine drives the work.
     Args:       
-        file1 and file2: filename strings
         config_src: location of configuration
-    Returns:    Zero for success; -1 for exception (for external callers)
+    Returns:    Zero for success; 1 for exception (for external callers)
     """
     cfg = ConfigMgr(config_src)
     logging.info('Driver: About to ingest and process texts.')
 
     try:
-        pass
+        filenames = get_remote_filenames(cfg)
+        download_files(cfg, filenames)
+        download_dir = cfg.get('DATA_DOWNLOAD_DIR')
+        zip_files = [name for name in os.listdir(download_dir) if name.endswith('.zip')]
 
+        for filename in zip_files:
+            logging.info(f'processing: {filename}')
+            records_list = extract_and_process(cfg, filename)
+            csv_file = store_file_recs_csv(cfg, filename, records_list)
+            write_to_db(cfg, csv_file)
+            logging.info(f'wrote {csv_file} to DB')
 
     except Exception as e:
         logging.critical(f'Process failure - exception:  {e}')
@@ -41,11 +54,8 @@ def main(file1, file2, config_src=None):
     return 0
 
 
+
 if __name__ == "__main__":
-
-    file1 = sys.argv[1]
-    file2 = sys.argv[2]
-
-    ret_val = main(file1, file2, config_src='config/config.json')
+    ret_val = main(config_src='config/config.json')
 
     sys.exit(ret_val)
