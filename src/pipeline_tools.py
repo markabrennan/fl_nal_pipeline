@@ -11,13 +11,14 @@ import csv
 import json
 import logging
 import re
-import shutil
 from urllib.request import urlopen
 from urllib.request import urlretrieve
 from zipfile import ZipFile
 from contextlib import closing
 import datetime
+import psycopg2
 from config_mgr import ConfigMgr
+from db_tools import run_copy_from
 
 
 def get_remote_filenames(cfg):
@@ -132,10 +133,12 @@ def extract_and_process(cfg, filename):
         full_path = download_dir + '/' + zip.namelist()[0]
         with open(full_path, newline='') as csvfile:
             reader = csv.DictReader(csvfile)
-            cur_record = {}
             for row in reader:
-                cur_record['COUNTY'] = county
+                cur_record = {}
                 for field in fields:
+                    if field == 'CO_NO':
+                        cur_record['COUNTY'] = county
+                        cur_record[field] = row[field]
                     if field == 'DOR_UC':
                         cur_record[field] = row[field]
                         cur_record['DOR_UC_DESC'] = code_dict[row[field]]
@@ -143,8 +146,46 @@ def extract_and_process(cfg, filename):
                 records_list.append(cur_record)
 
     return records_list
-                
-#
+
+
+def store_file_recs_json(cfg, filename, file_records):
+    download_dir = cfg.get('DATA_DOWNLOAD_DIR')
+    filename = filename.replace('zip', 'json')
+    full_path = download_dir + '/' + filename
+    with open(full_path, 'w') as json_file:
+        json.dump(file_records, json_file)
+
+
+def store_file_recs_csv(cfg, filename, file_records):
+    download_dir = cfg.get('DATA_DOWNLOAD_DIR')
+    filename = filename.replace('zip', 'csv')
+    full_path = download_dir + '/' + filename
+
+    # get headers from first record
+    headers = [field for field in file_records[0].keys()]
+
+    with open(full_path, 'w') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter='|')
+        csv_writer.writerow(headers)
+        for record in file_records:
+            values = [val for val in record.values()]
+            csv_writer.writerow(values)
+    return full_path
+
+
+def write_to_db(cfg, filename):
+    template_str = "host={} dbname={}"
+    connect_str = template_str.format(cfg.get("DB_HOST"),
+                                      cfg.get("DB_NAME"))
+
+    try:
+        conn = psycopg2.connect(connect_str)
+        run_copy_from(conn, cfg.get("TABLE_NAME"), filename)
+    except Exception as e:
+        logging.critical(f'failed to insert to db: {e}')
+
+
+
 # main to allow us to debug
 #
 if __name__ == "__main__":
@@ -159,8 +200,10 @@ if __name__ == "__main__":
 
     download_dir = cfg.get('DATA_DOWNLOAD_DIR')
     zip_files = [name for name in os.listdir(download_dir) if name.endswith('.zip')]
-    print(zip_files)
-    records_list = extract_and_process(cfg, zip_files[0])
+    zip_files_test = [zip_files[0]]
 
-    with open('file_records.json', 'w') as f:
-        json.dump(records_list, f)
+    for filename in zip_files_test:
+        records_list = extract_and_process(cfg, filename)
+        csv_file = store_file_recs_csv(cfg, filename, records_list)
+        write_to_db(cfg, csv_file)
+    
