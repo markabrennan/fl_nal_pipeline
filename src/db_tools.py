@@ -103,9 +103,18 @@ def run_copy_from(conn, table, filename):
 
 
 if __name__ == "__main__":
+    # check if the config label has been passed on the 
+    # command line:
+    if len(sys.argv) > 1:
+        env = sys.argv[1]
+    else:
+        env = 'DEFAULT'
+    sys.stderr.write(f'Config environment: {env}\n')
+    sys.stderr.flush()
+
     # if we are running as a standalone, then simply
     # create the nal_property_records table.
-    cfg = ConfigMgr('config/config.json')
+    cfg = ConfigMgr(env=env, config_src='config/config.json')
 
     conn = init_db(cfg)
 
