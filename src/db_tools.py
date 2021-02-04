@@ -8,11 +8,36 @@ and insert into Postgres DB
 
 import logging
 import sys
+from functools import wraps
 import psycopg2
 from config_mgr import ConfigMgr
 import data_model
 
 
+def db_singleton(init_func):
+    """ Singleton function ensures
+    we only initialize the DB once,
+    and subsequent calls ot init_db
+    fetch the single conn instance.
+    Args:
+        init_func:
+            The init_db function to be
+            wrapped by the decorator.
+    Returns:
+        The wrapper function
+    """
+    conn = None
+    @wraps(init_func)
+    def wrapper(cfg):
+        nonlocal conn
+        if conn is None:
+            logging.info(f'initializing db now')
+            conn = init_func(cfg)
+        return conn
+    return wrapper
+
+
+@db_singleton
 def init_db(cfg):
     """ Initialize DB connection from config, and
     return a connection object for use.
@@ -22,15 +47,30 @@ def init_db(cfg):
     Returns:
         connection object
     """
-    template_str = "host={} dbname={}"
-    connect_str = template_str.format(cfg.get("DB_HOST"),
-                                      cfg.get("DB_NAME"))
+
+    # the connect string differs depending on whether
+    # we're connecting to a local DB, or using
+    # the DB on the EC2 instance:
+    if cfg.env == 'REMOTE':
+        template_str = "host={} dbname={} user={}"
+        connect_str = template_str.format(cfg.get("DB_HOST"),
+                                        cfg.get("DB_NAME"),
+                                        cfg.get("DB_USER"))
+    else:
+        template_str = "host={} dbname={}"
+        connect_str = template_str.format(cfg.get("DB_HOST"),
+                                        cfg.get("DB_NAME"))
+                                    
 
     logging.info(f'initializing db')
     try:
         conn = psycopg2.connect(connect_str) 
+    except Exception as e:
+        logging.critical(f'failed to initialize DB: {e}')
+        raise e
+    else:
+        return conn
 
-    return conn
 
 def run_copy_from(conn, table, filename):
     """ Given a connection object, a table name, and
@@ -77,11 +117,13 @@ if __name__ == "__main__":
         conn.commit()
         logging.info(f'created table')
     except Exception as e:
-        logging.critical(f'failed to create table! : {e}')'
-        sys.stderr.write(f'failed to create table! : {e}\n')'
+        logging.critical(f'failed to create table! : {e}')
+        sys.stderr.write(f'failed to create table! : {e}\n')
         sys.stderr.flush()
         exit(1)
     else:
+        sys.stderr.write('created table\n')
+        sys.stderr.flush()
         exit(0)
 
 

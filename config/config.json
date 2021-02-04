@@ -29,6 +29,36 @@
         "LOG_FILE": "fl_nal_pipeline.log",
         "LOG_LEVEL": "INFO"
     },
+    "REMOTE": {
+        "DATA_DIR": "data",
+        "MIN_FILE_DATE": "11/9/20",
+        "FTP_SITE": "ftp://sdrftp03.dor.state.fl.us/Tax%20Roll%20Data%20Files/2020%20Final%20NAL%20-%20SDF%20Files",
+        "DB_HOST": "localhost",
+        "DB_NAME": "eng_test",
+        "DB_USER": "eng_test",
+        "TABLE_NAME": "nal_property_records",
+        "DATA_DOWNLOAD_DIR": "downloads",
+        "DOR_CODE_FILE": "config/dor_use_codes.json",
+        "CSV_FIELDS": [
+        	"PARCEL_ID",
+            "CO_NO",
+            "DOR_UC",
+            "JV",
+            "ACT_YR_BLT",
+            "TOT_LVG_AREA",
+            "SALE_PRC1",
+            "SALE_YR1",
+            "SALE_MO1",
+            "OWN_NAME",
+            "CENSUS_BK",
+            "PHY_ADDR1",
+            "PHY_ADDR2",
+            "PHY_CITY",
+            "PHY_ZIPCD"
+        ],
+        "LOG_FILE": "fl_nal_pipeline.log",
+        "LOG_LEVEL": "INFO"
+    },
     "DEBUG": {
         "DATA_DIR": "data",
         "MIN_FILE_DATE": "11/9/20",

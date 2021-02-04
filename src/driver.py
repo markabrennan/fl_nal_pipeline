@@ -23,13 +23,13 @@ from pipeline_tools import write_to_db
 
 
 
-def main(config_src):
+def main(env, config_src):
     """ Main routine drives the work.
     Args:       
         config_src: location of configuration
     Returns:    Zero for success; 1 for exception (for external callers)
     """
-    cfg = ConfigMgr(config_src)
+    cfg = ConfigMgr(env, config_src)
     logging.info('Driver: About to ingest and process texts.')
 
     try:
@@ -52,11 +52,24 @@ def main(config_src):
         exit(1)
 
     # we've successfully concluded all processing so exit 0
+    logging.info(f'completed processing.')
     return 0
 
 
 
 if __name__ == "__main__":
-    ret_val = main(config_src='config/config.json')
+    # check if the config label has been passed on the 
+    # command line:
+    if len(sys.argv) > 1:
+        env = sys.argv[1]
+    else:
+        env = 'DEFAULT'
+    sys.stderr.write(f'Config environment: {env}\n')
+    sys.stderr.flush()
+
+    ret_val = main(env=env, config_src='config/config.json')
+
+    sys.stderr.write(f'Completed processing.\n')
+    sys.stderr.flush()
 
     sys.exit(ret_val)
