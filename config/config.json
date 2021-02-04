@@ -5,6 +5,7 @@
         "FTP_SITE": "ftp://sdrftp03.dor.state.fl.us/Tax%20Roll%20Data%20Files/2020%20Final%20NAL%20-%20SDF%20Files",
         "DB_HOST": "127.0.0.1",
         "DB_NAME": "blastpoint",
+        "DB_USER": "eng_test",
         "TABLE_NAME": "nal_property_records",
         "DATA_DOWNLOAD_DIR": "downloads",
         "DOR_CODE_FILE": "config/dor_use_codes.json",
@@ -25,7 +26,7 @@
             "PHY_CITY",
             "PHY_ZIPCD"
         ],
-        "LOG_FILE": "fl_tax_pipeline.log",
+        "LOG_FILE": "fl_nal_pipeline.log",
         "LOG_LEVEL": "INFO"
     },
     "DEBUG": {
@@ -35,6 +36,7 @@
         "DB_HOST": "127.0.0.1",
         "TABLE_NAME": "nal_property_records",
         "DB_NAME": "blastpoint",
+        "DB_USER": "eng_test",
         "DATA_DOWNLOAD_DIR": "downloads",
         "DOR_CODE_FILE": "config/dor_use_codes.json",
         "CSV_FIELDS": [
@@ -54,7 +56,7 @@
             "PHY_CITY",
             "PHY_ZIPCD"
         ],
-        "LOG_FILE": "fl_tax_pipeline.log",
+        "LOG_FILE": "fl_nal_pipeline.log",
         "LOG_LEVEL": "DEBUG"
     }
 }

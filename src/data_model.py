@@ -1,8 +1,9 @@
-/* 
-    SQL DDL to create the nal_property_records table.
-*/
+"""
+Single string variable containing the CREATE
+statement for the nal_property_records table
+"""
 
-CREATE TABLE IF NOT EXISTS nal_property_records (
+TABLE_CREATE = """CREATE TABLE IF NOT EXISTS nal_property_records (
     PARCEL_ID  VARCHAR NOT NULL PRIMARY KEY,
     COUNTY  VARCHAR,
     CO_NO INT,
@@ -20,5 +21,5 @@ CREATE TABLE IF NOT EXISTS nal_property_records (
     PHY_ADDR2 VARCHAR,
     PHY_CITY VARCHAR,
     PHY_ZIPCD VARCHAR
-)
+)"""
 

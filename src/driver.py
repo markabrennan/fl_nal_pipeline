@@ -2,14 +2,15 @@
 driver.py
 
 Main driver code for running, processing, and testing.
-1) Check environment variables
-2) Instantiate a ConfigMgr object to fetch config, including:
-    - stop words for text processing
-    - data file path
-3) Ingest text from each file into doc variable
-4) Derive core words from each doc
-5) Run comparison scoring function on the two sets of core words
-    and log results, as well as emit to standard error (console)
+1) Instantiate a ConfigMgr object to fetch config;
+2) Get remote filenames from FTP site (configurable);
+3) Given list of filenames, download them;
+4) For each file, extract and process contents:
+    - parse configurable list of fields
+5) For each file, store parsed records in CSV file
+for later uploading to the DB;
+6) Write to the DB - first init the DB, get a conn,
+then invoke a copy_from function in the db_tools module.
 """
 
 import sys
@@ -22,7 +23,7 @@ from pipeline_tools import write_to_db
 
 
 
-def main(config_src=None):
+def main(config_src):
     """ Main routine drives the work.
     Args:       
         config_src: location of configuration
