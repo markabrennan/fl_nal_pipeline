@@ -1,6 +1,6 @@
 # fl_nal_pipeline project
 
-#fl_nal_pipeline
+
 ## Intro
 This project is a front-to-back data pipeline that fetches specific property tax record files from the state of Florida’s department of revenue, ingests and cleans specific fields, prepares output files for bulk data loading, and finally bulk loads data into a table in a Postgres DB.
 
