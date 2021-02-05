@@ -30,8 +30,8 @@ The script is meant to be run from start to finish, as a stand-alone program. It
 - Pass these filenames one by one to a function that downloads the actual zip file from the FTP site.
 - Extract each zip file (each zip file contains a single CSV file) and ingest relevant fields. These fields are configurable, but have been specified per the external requirements.  Some rudimentary cleansing is applied to these fields, with the idea that cleansing will be augmented once more analysis is performed on the data. The extraction function collects a list of Python dicts comprising each file record.
 - Each set of file records is subsequently passed to a function to save it to a new CSV file, for later DB loading.
-- Each new new CSV file name is then passed to a DB function to perform the Postgres bulk copy (“copy_from”) function, which bulk loads data from a CSV file into a designated table._
-This end-to-end pipeline could be decomposed into separate scripts. For example, bulk downloading could be scheduled at one time; another schedule might kick off a job to do the ETL on each downloaded zip file.  And finally, yet another job might run later to bulk upload the “clean” data into the DB. Such jobs might be scheduled and coordinated through a tool like Airflow.  Regardless, the organization of the code should make this decomposition fairly easy.  Most of the main ETL work is done in the pipeline_tools mode, which was designed to be easily called._
+- Each new CSV file name is then passed to a DB function to perform the Postgres bulk copy (“copy_from”) function, which bulk loads data from a CSV file into a designated table.
+This end-to-end pipeline could be decomposed into separate scripts. For example, bulk downloading could be scheduled at one time; another schedule might kick off a job to do the ETL on each downloaded zip file.  And finally, yet another job might run later to bulk upload the “clean” data into the DB. Such jobs might be scheduled and coordinated through a tool like Airflow.  Regardless, the organization of the code should make this decomposition fairly easy.  Most of the main ETL work is done in the pipeline_tools module, which was designed to be easily called.
 
 A driver module coordinates the end-to-end processing, essentially encapsulating the steps set forth above.
 
@@ -41,10 +41,10 @@ Interestingly, this script is functionally composed, with little object-oriented
 
 The following functions, while re-useable, also bake in certain assumptions about the data into code logic. Such assumptions could possibly be factored out, for example:
 - get_remote_filenames:  this function embeds certain regex patterns used to match files of interest. This should be factored out.
-- convert_filename_to_ftp:  this again uses a regex pattern to convert the readable filename on the FTP site into a canonical FTP directory listing - but this is likely too brittle!_
-- extract_and_process: this is the main ETL workhorse. While the list of fields is configurable, and may be extended, the function still hard-codes certain logic for certain fields. There is also an implicit dependence on ordering in the dictionary records, which corresponds to ordering in the CSV, which in turn corresponded to the target DB table layout. Thus, there is implicit coupling between the DB and the code, which is bad! This should be factored out.  Additionally, the file processing could be moved out altogether, and wrapped in a generator, so that field processing can be done on-demand. As it is, the function assumes that the entire contents of the extracted zip file should be ingested (which is likely true, but may not always be the case).
-- clean_fields:  this function does minimal cleaning, based on bad DB loads with a stray ‘\’ character. It also strips out whitespace from the left and right sides of a field. Other cleaning will likely need to be added, but it can be packaged in this single function._
-- store_file_recs_json: before storing to CSV for the bulk copy, I thought it would be useful to store the ETL data in JSON form, which is prettier, but this function is ultimately not used in the script._
+- convert_filename_to_ftp:  this again uses a regex pattern to convert the readable filename on the FTP site into a canonical FTP directory listing - but this is likely too brittle!
+- extract_and_process: this is the main ETL workhorse. While the list of fields is configurable, and may be extended, the function still hard-codes certain logic for certain fields. There is also an implicit dependence on ordering in the dictionary records, which corresponds to ordering in the CSV, which in turn corresponds to the target DB table layout. Thus, there is implicit coupling between the DB and the code, which is bad! This should be factored out.  Additionally, the file processing could be moved out altogether, and wrapped in a generator, so that field processing can be done on-demand. As it is, the function assumes that the entire contents of the extracted zip file should be ingested (which is likely true, but may not always be the case).
+- clean_fields:  this function does minimal cleaning, based on bad DB loads with a stray ‘\’ character. It also strips out whitespace from the left and right sides of a field. Other cleaning will likely need to be added, but it can be packaged in this single function.
+- store_file_recs_json: before storing to CSV for the bulk copy, I thought it would be useful to store the ETL data in JSON form, which is prettier, but this function is ultimately not used in the script.
 
 ### Configuration
 A JSON config file externalizes some important configuration information, such as:
@@ -55,7 +55,7 @@ A JSON config file externalizes some important configuration information, such a
 - Name and location of the DOR Use Code mapping file
 
 ## Database Table
-The single DB table - nal_property_records - comprises a simple mapping of the specified CSV fields of interest and DB columns. Unfortunately, I was not able to implement PostgresSQL’s “SERIAL” auto-incrementing key functionality by way of the psycopg2 module, which means the primary key is the parcel ID, which is a archer - this is not ideal. Future iterations should address and enhance the data model.
+The single DB table - nal_property_records - comprises a simple mapping of the specified CSV fields of interest to DB columns. Unfortunately, I was not able to implement PostgresSQL’s “SERIAL” auto-incrementing key functionality by way of the psycopg2 module, which means the primary key is the parcel ID, which is a varchar - this is not ideal. Future iterations should address and enhance the data model.
 
 ## Data Observations
 Alas, as suggested above, this project did not arrive at a particularly well-formed and insightful analysis of the data sets. Again, that was because the focus was on engineering good code, which I hope I was able to do.
